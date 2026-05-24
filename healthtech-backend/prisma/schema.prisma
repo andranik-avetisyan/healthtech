@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output  = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNKNOWN
+}
+
+enum PrescriptionStatus {
+  ACTIVE
+  ON_HOLD
+  CANCELLED
+  COMPLETED
+  DRAFT
+}
+
+model Patient {
+  id            Int        @default(autoincrement()) @id
+  active        Boolean?   @default(true)
+  phone         String?
+  firstName     String
+  lastName      String
+  birthDate     DateTime
+  gеnder        Gender
+  createdAt     DateTime   @default(now()) 
+  updatedAt     DateTime   @updatedAt
+  prescriptions Prescription[]
+  dicomStudies  DicomStudy[]
+}
+ 
+model Prescription {
+  id                Int        @default(autoincrement()) @id
+  patient           Patient   @relation(fields: [patientId], references: [id])
+  patientId         Int
+  status            PrescriptionStatus @default(DRAFT)
+  medication        String
+  Subject           String
+  authoredOn        DateTime   @default(now())
+  requester         String
+  dosageInstruction String
+  dispenseRequest   String
+  createdAt         DateTime   @default(now()) 
+  updatedAt         DateTime   @updatedAt
+}
+
+model DicomStudy {
+  id                Int        @default(autoincrement()) @id
+  patient           Patient   @relation(fields: [patientId], references: [id])
+  patientId         Int
+  title             String
+  studyInstanceUid  String?    @unique
+  filePath          String     
+  fileSize          BigInt?    
+  uploadTime        DateTime   @default(now())
+}
