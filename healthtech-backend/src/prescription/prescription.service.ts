@@ -5,32 +5,74 @@ import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class PrescriptionService {
-  constructor(private prisma: PrismaService) {}
-  
+  constructor(private readonly prisma: PrismaService) {}
+
   async create(createPrescriptionDto: CreatePrescriptionDto) {
-    if (!createPrescriptionDto.patientId) {
-      throw new NotFoundException('Patient not found');
+    const patientExists = await this.prisma.patient.findUnique({
+      where: { id: createPrescriptionDto.patientId },
+    });
+
+    if (!patientExists) {
+      throw new NotFoundException(`Cannot create prescription. Patient with ID ${createPrescriptionDto.patientId} not found.`);
     }
-    const patient = await this.prisma.patient.findUnique({ where: { id: createPrescriptionDto.patientId } });
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
-    } 
-    return this.prisma.prescription.create({ data: createPrescriptionDto });
+
+    return this.prisma.prescription.create({
+      data: {
+        patientId: createPrescriptionDto.patientId,
+        status: createPrescriptionDto.status,
+        medication: createPrescriptionDto.medication,
+        subject: createPrescriptionDto.subject,
+        requester: createPrescriptionDto.requester,
+        dosageInstruction: createPrescriptionDto.dosageInstruction,
+        dispenseRequest: createPrescriptionDto.dispenseRequest,
+      },
+    });
   }
 
   async findAll() {
-    return this.prisma.prescription.findMany();
+    return this.prisma.prescription.findMany({
+      include: {
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: number) {
-    return this.prisma.prescription.findUnique({ where: { id } });
+    const prescription = await this.prisma.prescription.findUnique({
+      where: { id },
+      include: { patient: true },
+    });
+
+    if (!prescription) {
+      throw new NotFoundException(`Prescription with ID ${id} not found`);
+    }
+
+    return prescription;
   }
 
   async update(id: number, updatePrescriptionDto: UpdatePrescriptionDto) {
-    return this.prisma.prescription.update({ where: { id }, data: updatePrescriptionDto });
+    await this.findOne(id);
+
+    return this.prisma.prescription.update({
+      where: { id },
+      data: {
+        ...updatePrescriptionDto,
+        authoredOn: new Date(),
+      },
+    });
   }
 
   async remove(id: number) {
-    return this.prisma.prescription.delete({ where: { id } });
+    await this.findOne(id);
+    
+    return this.prisma.prescription.delete({
+      where: { id },
+    });
   }
 }

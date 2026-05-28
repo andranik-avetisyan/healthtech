@@ -1,22 +1,32 @@
-import { IsNegative, IsOptional, IsString } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsEnum, IsOptional } from 'class-validator';
+import { PrescriptionStatus } from 'generated/prisma/client';
 
 export class CreatePrescriptionDto {
-  @IsNegative()
+  @IsInt()
+  @IsNotEmpty()
   patientId!: number;
-  
+
+  @IsEnum(PrescriptionStatus)
+  @IsOptional()
+  status?: PrescriptionStatus;
+
   @IsString()
+  @IsNotEmpty()
   medication!: string;
 
   @IsString()
+  @IsNotEmpty()
   subject!: string;
 
   @IsString()
+  @IsNotEmpty()
   requester!: string;
 
   @IsString()
+  @IsNotEmpty()
   dosageInstruction!: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   dispenseRequest!: string;
 }
