@@ -61,10 +61,7 @@ export class PrescriptionService {
 
     return this.prisma.prescription.update({
       where: { id },
-      data: {
-        ...updatePrescriptionDto,
-        authoredOn: new Date(),
-      },
+      data: updatePrescriptionDto,
     });
   }
 
