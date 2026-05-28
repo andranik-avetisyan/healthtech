@@ -35,7 +35,7 @@ model Patient {
   firstName     String
   lastName      String
   birthDate     DateTime
-  gеnder        Gender
+  gender        Gender
   createdAt     DateTime   @default(now()) 
   updatedAt     DateTime   @updatedAt
   prescriptions Prescription[]
@@ -48,7 +48,7 @@ model Prescription {
   patientId         Int
   status            PrescriptionStatus @default(DRAFT)
   medication        String
-  Subject           String
+  subject           String
   authoredOn        DateTime   @default(now())
   requester         String
   dosageInstruction String
